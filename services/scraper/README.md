@@ -1,6 +1,6 @@
 # leadflow-scraper
 
-A small Python tool that collects listing data from two public **practice sites** and shows how to do it politely.
+A small Python tool that collects listing data from two public practice sites and shows how to do it politely.
 It is the "ethical data collection" part of the lead-flow-automation repo. It does **not** collect people or leads:
 the data it produces (quotes and book prices) is sample data only.
 
