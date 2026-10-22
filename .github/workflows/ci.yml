@@ -1,8 +1,11 @@
 name: CI
 
-# Private repo: heavy jobs run on pull requests and manual dispatch only, to spare private Actions minutes.
+# Core checks (node, scraper, gitleaks) run on pull requests and on pushes to main, so main always has a run.
+# Heavy jobs (n8n import, compose smoke, e2e) run on pull requests and manual dispatch only, to spare private Actions minutes.
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -71,6 +74,7 @@ jobs:
 
   n8n-import:
     name: n8n imports the workflows
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -84,6 +88,7 @@ jobs:
 
   compose:
     name: Compose stack smoke test
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -111,6 +116,7 @@ jobs:
 
   e2e:
     name: Dashboard in a headless browser
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

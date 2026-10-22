@@ -43,12 +43,15 @@ describe("dashboard in a real browser", () => {
       expect(await page.locator("#daily rect.bar").count()).toBeGreaterThan(10);
 
       // Switching the window re-queries the API and keeps the label.
+      // Listen before the action: the response can land before selectOption resolves.
+      const week = page.waitForResponse((r) => r.url().includes("days=7"));
       await page.selectOption("#window", "7");
-      await page.waitForResponse((r) => r.url().includes("days=7"));
+      await week;
       expect(await page.locator("#dataset-badge").isVisible()).toBe(true);
 
+      const month = page.waitForResponse((r) => r.url().includes("days=30"));
       await page.selectOption("#window", "30");
-      await page.waitForResponse((r) => r.url().includes("days=30"));
+      await month;
       await page.locator("#content").waitFor({ state: "visible" });
       await mkdir("docs", { recursive: true });
       await page.screenshot({ path: "docs/dashboard.png", fullPage: true });
