@@ -1,0 +1,11 @@
+title = "lead-flow-automation gitleaks config"
+
+[extend]
+useDefault = true
+
+# Test files use obviously fake signing secrets ("test-secret-0123456789") that the
+# generic-api-key entropy rule flags. Only that rule, only under test/.
+[[allowlists]]
+description = "fake webhook secrets in tests"
+targetRules = ["generic-api-key"]
+paths = ['''^test/''']
