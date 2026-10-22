@@ -1,0 +1,64 @@
+# Local demo stack: PostgreSQL + the lead service (with built-in fake CRM) + n8n with the exported workflows.
+# Credentials below are for local use only; copy .env.example to .env and set your own secrets.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: leadflow
+      POSTGRES_PASSWORD: leadflow
+      POSTGRES_DB: leadflow
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leadflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  service:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "3000"
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?copy .env.example to .env and set WEBHOOK_SECRET}
+      DATABASE_URL: postgres://leadflow:leadflow@db:5432/leadflow
+      ENABLE_FAKES: "true"
+      SEED_ON_START: ${SEED_ON_START:-true}
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: loads n8n/workflows/*.json into n8n's database (imported workflows start inactive).
+  n8n-import:
+    image: n8nio/n8n:2.45.2
+    command: ["import:workflow", "--separate", "--input=/workflows"]
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?copy .env.example to .env and set N8N_ENCRYPTION_KEY}
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+
+  n8n:
+    image: n8nio/n8n:2.45.2
+    depends_on:
+      n8n-import:
+        condition: service_completed_successfully
+      service:
+        condition: service_healthy
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?copy .env.example to .env and set N8N_ENCRYPTION_KEY}
+      GENERIC_TIMEZONE: UTC
+    ports:
+      - "127.0.0.1:5678:5678"
+    volumes:
+      - n8n-data:/home/node/.n8n
+
+volumes:
+  db-data:
+  n8n-data:

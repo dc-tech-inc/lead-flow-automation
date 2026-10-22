@@ -3,9 +3,9 @@ title = "lead-flow-automation gitleaks config"
 [extend]
 useDefault = true
 
-# Test files use obviously fake signing secrets ("test-secret-0123456789") that the
-# generic-api-key entropy rule flags. Only that rule, only under test/.
+# Test files and the CI workflow use obviously fake throwaway secrets ("test-secret-0123456789",
+# the compose smoke test's keys) that the generic-api-key entropy rule flags. Only that rule, only there.
 [[allowlists]]
-description = "fake webhook secrets in tests"
+description = "fake secrets in tests and CI"
 targetRules = ["generic-api-key"]
-paths = ['''^test/''']
+paths = ['''^test/''', '''^\.github/workflows/ci\.yml$''']

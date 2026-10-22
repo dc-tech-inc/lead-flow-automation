@@ -69,6 +69,46 @@ jobs:
       - run: ruff format --check .
       - run: pytest
 
+  n8n-import:
+    name: n8n imports the workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Import into a real n8n container and list the result
+        run: |
+          docker run --rm --entrypoint sh             -e N8N_ENCRYPTION_KEY=ci-only-not-a-secret             -v "$PWD/n8n/workflows:/workflows:ro"             n8nio/n8n:2.45.2             -c 'n8n import:workflow --separate --input=/workflows && n8n list:workflow' | tee import.log
+          for name in "Lead intake" "Lead follow-up" "Slow response alert"; do
+            grep -q "$name" import.log
+          done
+
+  compose:
+    name: Compose stack smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      WEBHOOK_SECRET: ci-compose-webhook-secret-0123456789
+      N8N_ENCRYPTION_KEY: ci-compose-n8n-key-0123456789
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Start PostgreSQL and the service
+        run: docker compose up -d --build --wait service
+      - name: Signed events end to end
+        run: node scripts/smoke.mjs
+      - name: n8n boots with the imported workflows
+        run: |
+          docker compose up -d n8n
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5678/healthz && break; sleep 5; done
+          curl -sf http://127.0.0.1:5678/healthz
+          docker compose logs n8n-import | grep -i "imported"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - run: docker compose down -v
+
   e2e:
     name: Dashboard in a headless browser
     runs-on: ubuntu-latest
