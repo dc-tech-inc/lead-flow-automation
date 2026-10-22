@@ -4,7 +4,7 @@
   "private": true,
   "description": "Lead intake service: signed webhooks, third-party clients with retry, fake CRM and a response-time/conversion dashboard over synthetic data.",
   "license": "MIT",
-  "author": "DC TECH INC",
+  "author": "DCtech.",
   "type": "module",
   "engines": { "node": ">=24" },
   "packageManager": "pnpm@11.17.0",
