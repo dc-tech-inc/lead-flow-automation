@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lead desk · response time and conversion</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Lead desk</h1>
+        <p class="sub">First-response time and conversion, from the lead store.</p>
+      </div>
+      <div class="controls">
+        <span id="dataset-badge" class="badge" hidden>Synthetic data</span>
+        <label for="window">Window</label>
+        <select id="window">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+    </header>
+
+    <main id="main" aria-live="polite">
+      <p id="status" class="status">Loading metrics…</p>
+
+      <div id="content" hidden>
+        <section class="hero" aria-labelledby="hero-label">
+          <p id="hero-label" class="label">Median first response</p>
+          <p id="hero-value" class="hero-value">–</p>
+          <figure class="ruler">
+            <svg id="ruler" viewBox="0 0 600 64" role="img" aria-labelledby="ruler-title">
+              <title id="ruler-title">Median and 90th percentile response time on one time scale</title>
+            </svg>
+            <figcaption id="ruler-caption" class="muted"></figcaption>
+          </figure>
+        </section>
+
+        <section class="kpis" aria-label="Key figures">
+          <div class="kpi"><p class="label">90th percentile</p><p id="kpi-p90" class="kpi-value">–</p></div>
+          <div class="kpi"><p class="label">Conversion</p><p id="kpi-conv" class="kpi-value">–</p></div>
+          <div class="kpi"><p class="label">Leads</p><p id="kpi-leads" class="kpi-value">–</p></div>
+          <div class="kpi"><p class="label">Responded</p><p id="kpi-resp" class="kpi-value">–</p></div>
+        </section>
+
+        <section class="panel" aria-labelledby="daily-h">
+          <h2 id="daily-h">Median first response by day</h2>
+          <svg id="daily" viewBox="0 0 720 200" role="img" aria-labelledby="daily-title">
+            <title id="daily-title">Bar chart of the median first-response time for each day</title>
+          </svg>
+          <details>
+            <summary>Show as table</summary>
+            <table id="daily-table">
+              <caption class="sr-only">Median first response by day</caption>
+              <thead><tr><th scope="col">Day</th><th scope="col" class="num">Leads</th><th scope="col" class="num">Median</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </details>
+        </section>
+
+        <section class="panel" aria-labelledby="src-h">
+          <h2 id="src-h">By source</h2>
+          <table id="src-table">
+            <thead><tr><th scope="col">Source</th><th scope="col" class="num">Leads</th><th scope="col" class="num">Median response</th><th scope="col" class="num">Conversion</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </section>
+
+        <p id="footnote" class="muted footnote"></p>
+      </div>
+
+      <button id="retry" type="button" hidden>Try again</button>
+    </main>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
