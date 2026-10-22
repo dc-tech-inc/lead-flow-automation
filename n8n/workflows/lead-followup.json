@@ -1,0 +1,90 @@
+{
+  "id": "leadflowFollowup02",
+  "name": "Lead follow-up",
+  "active": false,
+  "nodes": [
+    {
+      "id": "7c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d0001",
+      "name": "Follow-up webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "9e8d7c6b-5a49-4382-9170-6f5e4d3c0002",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-followup",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "7c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d0002",
+      "name": "Draft reply and build event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Draft a reply (sending is intentionally stubbed: no mail server in this repo) and\n// prepare a lead.responded event so the dashboard can measure the first-response time.\nconst lead = $input.first().json.body ?? {};\nconst reply = `Hi ${lead.name ?? 'there'}, thanks for getting in touch. We will follow up shortly.`;\nconst event = { type: 'lead.responded', externalId: String(lead.externalId ?? '') };\nconst body = JSON.stringify(event);\nconst timestamp = String(Math.floor(Date.now() / 1000));\nreturn [{ json: { reply, body, timestamp, toSign: `${timestamp}.${body}` } }];\n"
+      }
+    },
+    {
+      "id": "7c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d0003",
+      "name": "Sign (HMAC-SHA256)",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [480, 0],
+      "parameters": {
+        "action": "hmac",
+        "binaryData": false,
+        "type": "SHA256",
+        "value": "={{ $json.toSign }}",
+        "dataPropertyName": "signature",
+        "encoding": "hex"
+      },
+      "credentials": {
+        "crypto": {
+          "id": "CREATE_ME",
+          "name": "lead-flow webhook secret"
+        }
+      }
+    },
+    {
+      "id": "7c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d0004",
+      "name": "POST lead.responded",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "parameters": {
+        "method": "POST",
+        "url": "http://service:3000/webhooks/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Timestamp", "value": "={{ $json.timestamp }}" },
+            { "name": "X-Signature", "value": "={{ 'sha256=' + $json.signature }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Follow-up webhook": { "main": [[{ "node": "Draft reply and build event", "type": "main", "index": 0 }]] },
+    "Draft reply and build event": { "main": [[{ "node": "Sign (HMAC-SHA256)", "type": "main", "index": 0 }]] },
+    "Sign (HMAC-SHA256)": { "main": [[{ "node": "POST lead.responded", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "staticData": null,
+  "tags": [],
+  "meta": { "templateCredsSetupCompleted": false }
+}

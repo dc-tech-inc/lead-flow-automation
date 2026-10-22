@@ -1,0 +1,90 @@
+{
+  "id": "leadflowIntake01",
+  "name": "Lead intake",
+  "active": false,
+  "nodes": [
+    {
+      "id": "2b0c6c1e-6d6a-4a3a-9a53-0f1c5a0a0001",
+      "name": "Lead form webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "5d3f7a10-0b1c-4e22-8a61-7f0a1c2d0001",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-form",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "2b0c6c1e-6d6a-4a3a-9a53-0f1c5a0a0002",
+      "name": "Build signed-event input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Turn the form submission into a lead.created event and prepare the string to sign.\nconst form = $input.first().json.body ?? {};\nconst event = {\n  type: 'lead.created',\n  externalId: String(form.id ?? $execution.id),\n  source: String(form.source ?? 'website-form'),\n  email: String(form.email ?? ''),\n  name: String(form.name ?? ''),\n};\nconst body = JSON.stringify(event);\nconst timestamp = String(Math.floor(Date.now() / 1000));\n// The service verifies HMAC-SHA256 over \"<timestamp>.<raw body>\".\nreturn [{ json: { body, timestamp, toSign: `${timestamp}.${body}` } }];\n"
+      }
+    },
+    {
+      "id": "2b0c6c1e-6d6a-4a3a-9a53-0f1c5a0a0003",
+      "name": "Sign (HMAC-SHA256)",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [480, 0],
+      "parameters": {
+        "action": "hmac",
+        "binaryData": false,
+        "type": "SHA256",
+        "value": "={{ $json.toSign }}",
+        "dataPropertyName": "signature",
+        "encoding": "hex"
+      },
+      "credentials": {
+        "crypto": {
+          "id": "CREATE_ME",
+          "name": "lead-flow webhook secret"
+        }
+      }
+    },
+    {
+      "id": "2b0c6c1e-6d6a-4a3a-9a53-0f1c5a0a0004",
+      "name": "POST lead.created",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "parameters": {
+        "method": "POST",
+        "url": "http://service:3000/webhooks/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Timestamp", "value": "={{ $json.timestamp }}" },
+            { "name": "X-Signature", "value": "={{ 'sha256=' + $json.signature }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Lead form webhook": { "main": [[{ "node": "Build signed-event input", "type": "main", "index": 0 }]] },
+    "Build signed-event input": { "main": [[{ "node": "Sign (HMAC-SHA256)", "type": "main", "index": 0 }]] },
+    "Sign (HMAC-SHA256)": { "main": [[{ "node": "POST lead.created", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "staticData": null,
+  "tags": [],
+  "meta": { "templateCredsSetupCompleted": false }
+}

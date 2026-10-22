@@ -1,0 +1,74 @@
+{
+  "id": "leadflowSlowAlert03",
+  "name": "Slow response alert",
+  "active": false,
+  "nodes": [
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b0001",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] }
+      }
+    },
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b0002",
+      "name": "GET last-day metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "parameters": {
+        "method": "GET",
+        "url": "http://service:3000/api/metrics?days=1",
+        "options": {}
+      }
+    },
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b0003",
+      "name": "Median above 15 min?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [480, 0],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            {
+              "id": "c0ffee00-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.medianResponseSec }}",
+              "rightValue": 900,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b0004",
+      "name": "Notify (placeholder)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, -80],
+      "parameters": {},
+      "notes": "Placeholder. Swap for Slack, e-mail or a ticket node; no notification channel is configured in this repo.",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": { "main": [[{ "node": "GET last-day metrics", "type": "main", "index": 0 }]] },
+    "GET last-day metrics": { "main": [[{ "node": "Median above 15 min?", "type": "main", "index": 0 }]] },
+    "Median above 15 min?": { "main": [[{ "node": "Notify (placeholder)", "type": "main", "index": 0 }], []] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "staticData": null,
+  "tags": [],
+  "meta": { "templateCredsSetupCompleted": false }
+}
