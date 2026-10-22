@@ -3,7 +3,7 @@
 [![CI](https://github.com/dc-tech-inc/lead-flow-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/dc-tech-inc/lead-flow-automation/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A reference implementation of a **lead capture → automation → CRM** pipeline, by [DC TECH INC](https://dctech.live):
+A reference implementation of a **lead capture → automation → CRM** pipeline, by [DCtech.](https://dctech.live):
 HMAC-signed webhooks into a Node/TypeScript service, versioned [n8n](https://n8n.io) workflows, resilient calls to
 third-party APIs (a fake CRM and a fake enrichment API), a PostgreSQL store, an ethical Python scraper, and a
 dashboard for **response time** and **conversion**.

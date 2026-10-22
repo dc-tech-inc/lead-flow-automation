@@ -7,7 +7,7 @@ name = "leadflow-scraper"
 version = "0.1.0"
 description = "Polite, allow-listed scraper for practice sites: robots.txt, rate limit and disk cache."
 license = "MIT"
-authors = [{ name = "DC TECH INC" }]
+authors = [{ name = "DCtech." }]
 requires-python = ">=3.12"
 dependencies = ["requests==2.34.2", "beautifulsoup4==4.15.0"]
 

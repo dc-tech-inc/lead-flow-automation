@@ -5,7 +5,7 @@ This is a reference project. It ships no real credentials and talks only to buil
 ## Reporting a vulnerability
 
 Please do not open a public issue for a security problem. Use GitHub's private vulnerability reporting
-(Security tab, "Report a vulnerability") on this repository. If that is unavailable, contact DC TECH INC
+(Security tab, "Report a vulnerability") on this repository. If that is unavailable, contact DCtech.
 through https://dctech.live.
 
 You can expect an acknowledgement within a few working days. This is a small project without a bounty program.
