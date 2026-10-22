@@ -50,6 +50,25 @@ jobs:
       - run: pnpm test:coverage
       - run: pnpm build
 
+  scraper:
+    name: Scraper (ruff, pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/scraper
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/scraper/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest
+
   e2e:
     name: Dashboard in a headless browser
     runs-on: ubuntu-latest
