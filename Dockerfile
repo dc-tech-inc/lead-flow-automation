@@ -1,5 +1,5 @@
 # Build stage: compile TypeScript with the full dev toolchain.
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -9,7 +9,7 @@ COPY src ./src
 RUN pnpm build && pnpm prune --prod
 
 # Runtime stage: production dependencies, compiled output, schema and static dashboard only.
-FROM node:24-alpine
+FROM node:25-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/node_modules ./node_modules
