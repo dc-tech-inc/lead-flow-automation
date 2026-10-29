@@ -36,7 +36,7 @@ services:
 
   # One-shot: loads n8n/workflows/*.json into n8n's database (imported workflows start inactive).
   n8n-import:
-    image: n8nio/n8n:2.45.2
+    image: n8nio/n8n:2.45.4
     command: ["import:workflow", "--separate", "--input=/workflows"]
     environment:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?copy .env.example to .env and set N8N_ENCRYPTION_KEY}
@@ -45,7 +45,7 @@ services:
       - ./n8n/workflows:/workflows:ro
 
   n8n:
-    image: n8nio/n8n:2.45.2
+    image: n8nio/n8n:2.45.4
     depends_on:
       n8n-import:
         condition: service_completed_successfully
