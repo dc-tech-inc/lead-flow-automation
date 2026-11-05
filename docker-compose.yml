@@ -2,7 +2,7 @@
 # Credentials below are for local use only; copy .env.example to .env and set your own secrets.
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_USER: leadflow
       POSTGRES_PASSWORD: leadflow
